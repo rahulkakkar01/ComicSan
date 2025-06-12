@@ -59,7 +59,7 @@ export default function Home() {
   const fetchLatest = async () => {
     setLoading(true);
     try {
-      // Using the proxy to get latest manga (ordered by updated date instead of created date)
+      // Using the proxy to get latest manga (ordered by updated date)
       const response = await fetch(`https://backend-rizr.onrender.com/api/mangadex-proxy/manga?limit=24&includes[]=cover_art&contentRating[]=safe&contentRating[]=suggestive&order[updatedAt]=desc`);
       if (!response.ok) throw new Error('Failed to fetch latest manga');
       const data = await response.json();
@@ -212,86 +212,92 @@ export default function Home() {
               )}
             </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {(loading || isSearching) ? (
-            [...Array(12)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-[2/3] bg-dark-card rounded-lg"></div>
-                <div className="h-4 bg-dark-card rounded mt-2 w-3/4"></div>
-              </div>
-            ))
-          ) : mangaList.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <div className="text-text-muted text-lg">
-                {searchQuery.trim() ? (
-                  <>
-                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    No manga found for "{searchQuery}"
-                  </>
-                ) : (
-                  "No manga available"
-                )}
-              </div>
-            </div>
-          ) : (
-            mangaList.map((manga: any) => {
-              const cover = manga.relationships.find(
-                (r: any) => r.type === "cover_art"
-              );
-              const coverUrl = cover
-                ? `https://uploads.mangadex.org/covers/${manga.id}/${cover.attributes.fileName}.256.jpg`
-                : null;
-
-              return (
-                <div
-                  key={manga.id}
-                  className="group cursor-pointer"
-                  onClick={() => navigate(`/manga/${manga.id}`)}
-                >
-                  <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
-                    <div className="absolute top-2 left-2 z-10 flex gap-1">
-                      {manga.attributes.status === "ongoing" && (
-                        <span className="new-badge">New</span>
-                      )}
-                      {manga.attributes.status === "completed" && (
-                        <span className="hot-badge">Hot</span>
-                      )}
-                    </div>
-                    {coverUrl ? (
-                      <img
-                        src={coverUrl}
-                        alt={manga.attributes.title.en || "Manga cover"}
-                        className="w-full h-full object-cover transform transition 
-                          duration-300 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-dark-card flex items-center justify-center">
-                        <span className="text-text-muted text-sm">No Image</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-fade 
-                      opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              {(loading || isSearching) ? (
+                [...Array(12)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="aspect-[2/3] bg-dark-card rounded-lg"></div>
+                    <div className="h-4 bg-dark-card rounded mt-2 w-3/4"></div>
                   </div>
-                  <h3 className="text-text-primary text-sm font-medium line-clamp-2">
-                    {manga.attributes.title.en}
-                  </h3>
-                  <div className="flex gap-1 mt-1">
-                    {manga.attributes.tags?.slice(0, 2).map((tag: any) => (
-                      <span key={tag.id} className="tag-badge">
-                        {tag.attributes.name.en}
-                      </span>
-                    ))}
+                ))
+              ) : mangaList.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <div className="text-text-muted text-lg">
+                    {searchQuery.trim() ? (
+                      <>
+                        <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        No manga found for "{searchQuery}"
+                      </>
+                    ) : (
+                      "No manga available"
+                    )}
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
+              ) : (
+                mangaList.map((manga: any) => {
+                  const cover = manga.relationships?.find(
+                    (r: any) => r.type === "cover_art"
+                  );
+                  
+                  const coverUrl = cover && cover.attributes?.fileName
+                    ? `https://uploads.mangadex.org/covers/${manga.id}/${cover.attributes.fileName}.512.jpg`
+                    : null;
+
+                  const title = manga.attributes?.title?.en || 
+                               manga.attributes?.title?.['ja-ro'] || 
+                               manga.attributes?.title?.ja || 
+                               Object.values(manga.attributes?.title || {})[0] || 
+                               "Unknown Title";
+
+                  return (
+                    <div
+                      key={manga.id}
+                      className="group cursor-pointer"
+                      onClick={() => navigate(`/manga/${manga.id}`)}
+                    >
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
+                        <div className="absolute top-2 left-2 z-10 flex gap-1">
+                          {manga.attributes?.status === "ongoing" && (
+                            <span className="new-badge">New</span>
+                          )}
+                          {manga.attributes?.status === "completed" && (
+                            <span className="hot-badge">Hot</span>
+                          )}
+                        </div>
+                        {coverUrl ? (
+                          <img
+                            src={coverUrl}
+                            alt={title}
+                            className="w-full h-full object-cover transform transition 
+                              duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-dark-card flex items-center justify-center">
+                            <span className="text-text-muted text-sm">No Image</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-fade 
+                          opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <h3 className="text-text-primary text-sm font-medium line-clamp-2">
+                        {title}
+                      </h3>
+                      <div className="flex gap-1 mt-1">
+                        {manga.attributes?.tags?.slice(0, 2).map((tag: any, index: number) => (
+                          <span key={tag.id || index} className="tag-badge">
+                            {tag.attributes?.name?.en || "Tag"}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
