@@ -48,8 +48,6 @@ export default function Home() {
     setLoading(true);
     try {
       const data = await getPopularManga();
-      console.log("API Response:", data);
-      console.log("First manga item:", data.data?.[0]);
       setMangaList(data.data || []);
     } catch (err) {
       console.error("Failed to fetch:", err);
@@ -241,14 +239,9 @@ export default function Home() {
                     (r: any) => r.type === "cover_art"
                   );
                   
-                  console.log("Manga ID:", manga.id);
-                  console.log("Cover relationship:", cover);
-                  
                   const coverUrl = cover && cover.attributes?.fileName
                     ? `https://uploads.mangadex.org/covers/${manga.id}/${cover.attributes.fileName}.512.jpg`
                     : null;
-                    
-                  console.log("Generated cover URL:", coverUrl);
 
                   const title = manga.attributes?.title?.en || 
                                manga.attributes?.title?.['ja-ro'] || 
@@ -278,23 +271,12 @@ export default function Home() {
                             className="w-full h-full object-cover transform transition 
                               duration-300 group-hover:scale-105"
                             loading="lazy"
-                            onLoad={() => console.log("Image loaded successfully:", coverUrl)}
-                            onError={(e) => {
-                              console.error("Image failed to load:", coverUrl);
-                              console.error("Error details:", e);
-                              // Hide the broken image and show fallback
-                              e.currentTarget.style.display = 'none';
-                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                              if (fallback) fallback.style.display = 'flex';
-                            }}
                           />
-                        ) : null}
-                        <div 
-                          className="w-full h-full bg-dark-card flex items-center justify-center"
-                          style={{ display: coverUrl ? 'none' : 'flex' }}
-                        >
-                          <span className="text-text-muted text-sm">No Image</span>
-                        </div>
+                        ) : (
+                          <div className="w-full h-full bg-dark-card flex items-center justify-center">
+                            <span className="text-text-muted text-sm">No Image</span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-fade 
                           opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
